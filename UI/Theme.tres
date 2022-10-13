@@ -1,0 +1,28 @@
+[gd_resource type="Theme" load_steps=6 format=2]
+
+[ext_resource path="res://Assets/Call of Ops Duty.otf" type="DynamicFontData" id=1]
+
+[sub_resource type="StyleBoxFlat" id=7]
+bg_color = Color( 0.752941, 0.172549, 0.172549, 1 )
+corner_radius_top_left = 90
+corner_radius_top_right = 10
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.85098, 0.27451, 0.27451, 1 )
+corner_radius_top_left = 90
+corner_radius_top_right = 10
+
+[sub_resource type="StyleBoxFlat" id=8]
+bg_color = Color( 0.564706, 0.113725, 0.113725, 1 )
+corner_radius_top_left = 90
+corner_radius_top_right = 10
+
+[sub_resource type="DynamicFont" id=2]
+font_data = ExtResource( 1 )
+
+[resource]
+default_font = SubResource( 2 )
+Button/colors/font_color = Color( 1, 1, 1, 1 )
+Button/styles/hover = SubResource( 7 )
+Button/styles/normal = SubResource( 1 )
+Button/styles/pressed = SubResource( 8 )

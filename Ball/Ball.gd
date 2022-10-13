@@ -4,6 +4,19 @@ var min_speed = 100.0
 var max_speed = 600.0
 var speed_multiplier = 1.0
 var accelerate = false
+var time_highlight = 0.4
+var time_highlight_size = 0.3
+
+
+var wobble_period = 0.0
+var wobble_amplitude = 0.0
+export var wobble_max = 5
+var wobble_direction = Vector2.ZERO
+var decay_wobble = 0.15
+
+export var distort_effect = 0.0002
+
+var h_rotate = 0.0
 
 var released = true
 
@@ -18,23 +31,47 @@ func _ready():
 		var level = Levels.levels[Global.level]
 		min_speed *= level["multiplier"]
 		max_speed *= level["multiplier"]
-	
+
+
+func wobble():
+	wobble_period += 1
+	if wobble_amplitude > 0:
+		var pos = wobble_direction * wobble_amplitude * sin(wobble_period)
+		$Images.position = pos
+		wobble_amplitude -= decay_wobble
+
+
+func distort():
+	var direction = Vector2(1 + linear_velocity.length() * distort_effect, 1 - linear_velocity.length() * distort_effect)
+	$Images.rotation = linear_velocity.angle()
+	$Images.scale = direction
 
 func _on_Ball_body_entered(body):
 	if body.has_method("hit"):
 		body.hit(self)
 		accelerate = true	
+	$Tween.interpolate_property($Images/ColorRect, "modulate:a", 1.0, 0.0, time_highlight, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	$Tween.interpolate_property($Images/ColorRect2, "modulate:a", 1.0, 0.0, time_highlight, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
+	$Tween.start()
+	wobble_direction = linear_velocity.tangent().normalized()
+	wobble_amplitude = wobble_max
+
 
 func _input(event):
 	if not released and event.is_action_pressed("release"):
 		apply_central_impulse(initial_velocity)
 		released = true
 
+
 func _integrate_forces(state):
 	if not released:
 		var paddle = get_node_or_null("/root/Game/Paddle_Container/Paddle")
 		if paddle != null:
-			state.transform.origin = Vector2(paddle.position.x + paddle.width, paddle.position.y - 30)	
+			state.transform.origin = Vector2(paddle.position.x + paddle.width, paddle.position.y - 30)
+	else:
+		wobble()
+		distort()
+		comet()
 
 	if position.y > Global.VP.y + 100:
 		die()
@@ -49,8 +86,20 @@ func _integrate_forces(state):
 		state.linear_velocity = state.linear_velocity.normalized() * max_speed * speed_multiplier
 
 func change_size(s):
-	$ColorRect.rect_scale = s
+	$Images/Sprite.scale = s
 	$CollisionShape2D.scale = s
+	$Images/ColorRect.rect_scale = s
+	$Images/ColorRect2.rect_scale = s
+
+func comet():
+	h_rotate = wrapf(h_rotate+0.01, 0, 1)
+	var comet_container = get_node_or_null("/root/Game/Comet_Container")
+	if comet_container != null:
+		var sprite = $Images/Sprite.duplicate()
+		sprite.global_position = global_position
+		sprite.modulate.s = 0.6
+		sprite.modulate.h = h_rotate
+		comet_container.add_child(sprite)
 
 func change_speed(s):
 	speed_multiplier = s
